@@ -132,4 +132,9 @@ class BudgetProvider with ChangeNotifier {
         .where((s) => s.isWarning || s.isExceeded)
         .toList();
   }
+
+  /// Refresh budgets from storage
+  void refresh() {
+    _loadBudgets();
+  }
 }

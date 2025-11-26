@@ -150,11 +150,12 @@ class StorageService {
     return _settingsBox.get(key, defaultValue: defaultValue) as T?;
   }
 
-  // Clear all data
+  // Clear all data (transactions, categories, budgets, and settings)
   Future<void> clearAllData() async {
     await _transactionBox.clear();
     await _categoryBox.clear();
     await _budgetBox.clear();
+    await _settingsBox.clear();
     await _initializeDefaultCategories();
   }
 }

@@ -39,6 +39,7 @@ class DanabowoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<StorageService>.value(value: storageService),
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(storageService),
         ),

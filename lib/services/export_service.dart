@@ -214,7 +214,6 @@ class ExportService {
             ),
             pw.SizedBox(height: 12),
             pw.Table.fromTextArray(
-              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               headerDecoration:
                   const pw.BoxDecoration(color: PdfColors.grey200),
               cellPadding: const pw.EdgeInsets.all(6),

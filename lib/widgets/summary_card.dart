@@ -58,7 +58,7 @@ class SummaryCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _AmountRow(
-                    icon: Icons.arrow_downward,
+                    icon: Icons.arrow_upward,
                     label: 'Pemasukan',
                     amount: income,
                     color: AppColors.income,
@@ -67,7 +67,7 @@ class SummaryCard extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _AmountRow(
-                    icon: Icons.arrow_upward,
+                    icon: Icons.arrow_downward,
                     label: 'Pengeluaran',
                     amount: expense,
                     color: AppColors.expense,

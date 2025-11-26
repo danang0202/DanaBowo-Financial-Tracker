@@ -205,22 +205,11 @@ class _HomeTab extends StatelessWidget {
                   ],
 
                   // Recent transactions
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Transaksi Terbaru',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          // Navigate to transactions tab
-                        },
-                        child: const Text('Lihat Semua'),
-                      ),
-                    ],
+                  Text(
+                    'Transaksi Terbaru',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   if (recentTransactions.isEmpty)

@@ -95,7 +95,7 @@ class TransactionListItem extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                    isIncome ? Icons.arrow_upward : Icons.arrow_downward,
                     color: color,
                     size: 14,
                   ),

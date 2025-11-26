@@ -137,4 +137,9 @@ class TransactionProvider with ChangeNotifier {
 
     return result;
   }
+
+  /// Refresh transactions from storage
+  void refresh() {
+    _loadTransactions();
+  }
 }

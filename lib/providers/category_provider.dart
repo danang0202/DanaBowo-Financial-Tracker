@@ -106,4 +106,9 @@ class CategoryProvider with ChangeNotifier {
   Map<String, Category> get categoryMap {
     return {for (final c in _categories) c.id: c};
   }
+
+  /// Refresh categories from storage
+  void refresh() {
+    _loadCategories();
+  }
 }

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
+import '../providers/budget_provider.dart';
+import '../services/storage_service.dart';
 
 /// Settings screen
 class SettingsScreen extends StatelessWidget {
@@ -34,7 +38,10 @@ class SettingsScreen extends StatelessWidget {
                 title: const Text('Hapus Semua Data'),
                 subtitle: const Text('Menghapus semua transaksi dan anggaran'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showClearDataDialog(context),
+                onTap: () => _showClearDataDialog(
+                  context,
+                  context.read<StorageService>(),
+                ),
               ),
               const Divider(),
 
@@ -109,10 +116,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showClearDataDialog(BuildContext context) {
+  void _showClearDataDialog(BuildContext context, StorageService storageService) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Hapus Semua Data'),
         content: const Text(
           'Apakah Anda yakin ingin menghapus semua data? '
@@ -120,16 +127,26 @@ class SettingsScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () {
-              // TODO: Implement clear all data
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Data berhasil dihapus')),
-              );
+            onPressed: () async {
+              await storageService.clearAllData();
+              // Refresh providers
+              if (context.mounted) {
+                context.read<TransactionProvider>().refresh();
+                context.read<CategoryProvider>().refresh();
+                context.read<BudgetProvider>().refresh();
+              }
+              if (dialogContext.mounted) {
+                Navigator.pop(dialogContext);
+              }
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Data berhasil dihapus')),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Hapus'),
