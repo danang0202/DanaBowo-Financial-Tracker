@@ -5,7 +5,7 @@ import '../providers/category_provider.dart';
 import '../widgets/transaction_list_item.dart';
 import '../utils/formatters.dart';
 import '../utils/constants.dart';
-import '../widgets/premium_fab.dart';
+
 import 'add_transaction_screen.dart';
 
 /// Screen for displaying all transactions
@@ -67,6 +67,39 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 onPressed: () {
                   // TODO: Implement filter
                 },
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddTransactionScreen(),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.4),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -256,18 +289,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
-      ),
-      floatingActionButton: PremiumFAB(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddTransactionScreen(),
-            ),
-          );
-        },
-        icon: Icons.add,
-        label: 'Transaksi',
       ),
     );
   }

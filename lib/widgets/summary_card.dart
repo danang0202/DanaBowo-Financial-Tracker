@@ -165,7 +165,7 @@ class _AmountRow extends StatelessWidget {
         Text(
           formatCurrency(amount),
           style: TextStyle(
-            color: Theme.of(context).textTheme.titleLarge?.color,
+            color: color,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),

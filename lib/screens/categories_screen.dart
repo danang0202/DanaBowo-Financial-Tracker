@@ -4,7 +4,6 @@ import '../models/category.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
-import '../widgets/premium_fab.dart';
 
 import '../widgets/dynamic_island_notification.dart';
 
@@ -101,6 +100,34 @@ class _CategoriesScreenState extends State<CategoriesScreen>
                     ),
                   ],
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    onTap: () {
+                      _showAddCategoryDialog(context);
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ];
@@ -122,13 +149,6 @@ class _CategoriesScreenState extends State<CategoriesScreen>
             );
           },
         ),
-      ),
-      floatingActionButton: PremiumFAB(
-        onPressed: () {
-          _showAddCategoryDialog(context);
-        },
-        icon: Icons.add,
-        label: 'Kategori',
       ),
     );
   }

@@ -11,8 +11,6 @@ import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
 import '../widgets/dynamic_island_notification.dart';
 
-import '../widgets/premium_fab.dart';
-
 /// Screen for managing budgets
 class BudgetsScreen extends StatelessWidget {
   const BudgetsScreen({super.key});
@@ -58,6 +56,36 @@ class BudgetsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: InkWell(
+                      onTap: () {
+                        _showAddBudgetDialog(context);
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.add_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               if (budgets.isEmpty)
                 SliverFillRemaining(
@@ -131,13 +159,6 @@ class BudgetsScreen extends StatelessWidget {
             ],
           );
         },
-      ),
-      floatingActionButton: PremiumFAB(
-        onPressed: () {
-          _showAddBudgetDialog(context);
-        },
-        icon: Icons.add,
-        label: 'Anggaran',
       ),
     );
   }

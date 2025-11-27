@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
@@ -11,7 +12,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/expense_chart.dart';
 import '../widgets/budget_warning_card.dart';
-import '../widgets/premium_fab.dart';
+
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'categories_screen.dart';
@@ -43,40 +44,126 @@ class _DashboardScreenState extends State<DashboardScreen> {
           SettingsScreen(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Beranda',
+      extendBody: true,
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        color: Colors.transparent,
+        child: SafeArea(
+          bottom: false,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _BottomNavItem(
+                      icon: Icons.dashboard_rounded,
+                      label: 'Beranda',
+                      isSelected: _currentIndex == 0,
+                      onTap: () => setState(() => _currentIndex = 0),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Transaksi',
+                      isSelected: _currentIndex == 1,
+                      onTap: () => setState(() => _currentIndex = 1),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.category_rounded,
+                      label: 'Kategori',
+                      isSelected: _currentIndex == 2,
+                      onTap: () => setState(() => _currentIndex = 2),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.account_balance_wallet_rounded,
+                      label: 'Anggaran',
+                      isSelected: _currentIndex == 3,
+                      onTap: () => setState(() => _currentIndex = 3),
+                    ),
+                    _BottomNavItem(
+                      icon: Icons.settings_rounded,
+                      label: 'Pengaturan',
+                      isSelected: _currentIndex == 4,
+                      onTap: () => setState(() => _currentIndex = 4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Transaksi',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.category_outlined),
-            selectedIcon: Icon(Icons.category),
-            label: 'Kategori',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Anggaran',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Pengaturan',
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _BottomNavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedColor = AppColors.primary;
+    final unselectedColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? selectedColor.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? selectedColor : unselectedColor,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? selectedColor : unselectedColor,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -179,7 +266,7 @@ class _HomeTab extends StatelessWidget {
                   ),
                   actions: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 16),
+                      padding: const EdgeInsets.only(right: 8),
                       child: InkWell(
                         onTap: () {
                           Navigator.push(
@@ -210,6 +297,40 @@ class _HomeTab extends StatelessWidget {
                           child: const Icon(
                             Icons.file_download_rounded,
                             color: AppColors.primary,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AddTransactionScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.4),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            color: Colors.white,
                             size: 22,
                           ),
                         ),
@@ -329,18 +450,6 @@ class _HomeTab extends StatelessWidget {
             ),
           );
         },
-      ),
-      floatingActionButton: PremiumFAB(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddTransactionScreen(),
-            ),
-          );
-        },
-        icon: Icons.add,
-        label: 'Transaksi',
       ),
     );
   }
