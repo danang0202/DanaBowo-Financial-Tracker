@@ -6,20 +6,93 @@ import '../services/storage_service.dart';
 /// Provider for managing transactions
 class TransactionProvider with ChangeNotifier {
   final StorageService _storageService;
-  List<Transaction> _transactions = [];
   final Uuid _uuid = const Uuid();
+
+  // All transactions sorted by date (Source of Truth)
+  List<Transaction> _allTransactions = [];
+
+  // Transactions currently displayed in the UI (Paginated)
+  List<Transaction> _displayedTransactions = [];
+
+  // Pagination state
+  static const int _pageSize = 20;
+  int _currentPage = 0;
+  bool _hasMore = true;
+  bool _isLoading = false;
 
   TransactionProvider(this._storageService) {
     _loadTransactions();
   }
 
-  List<Transaction> get transactions => _transactions;
+  List<Transaction> get transactions => _displayedTransactions;
+  bool get hasMore => _hasMore;
+  bool get isLoading => _isLoading;
 
-  /// Load transactions from storage
+  /// Load all transactions from storage and initialize pagination
   void _loadTransactions() {
-    _transactions = _storageService.getAllTransactions();
-    _transactions.sort((a, b) => b.date.compareTo(a.date));
+    _allTransactions = _storageService.getAllTransactions();
+    _allTransactions.sort((a, b) => b.date.compareTo(a.date));
+
+    // Reset pagination
+    _currentPage = 0;
+    _hasMore = true;
+    _displayedTransactions = [];
+
+    // Load first page
+    _loadNextPage();
+  }
+
+  /// Load the next page of transactions
+  void loadMore() {
+    if (_isLoading || !_hasMore) return;
+    _loadNextPage();
+  }
+
+  void _loadNextPage() {
+    _isLoading = true;
     notifyListeners();
+
+    // Simulate a small delay for better UX (optional, but good for showing loader)
+    // In a real local app, this is instant, but we want to ensure the UI updates
+    Future.delayed(const Duration(milliseconds: 500), () {
+      final startIndex = _currentPage * _pageSize;
+
+      if (startIndex >= _allTransactions.length) {
+        _hasMore = false;
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      final endIndex = (startIndex + _pageSize) < _allTransactions.length
+          ? (startIndex + _pageSize)
+          : _allTransactions.length;
+
+      final nextChunk = _allTransactions.sublist(startIndex, endIndex);
+      _displayedTransactions.addAll(nextChunk);
+
+      _currentPage++;
+      _hasMore = endIndex < _allTransactions.length;
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+
+  /// Filter transactions (Search)
+  void filterTransactions(bool Function(Transaction) predicate) {
+    // Filter from all transactions
+    _displayedTransactions = _allTransactions.where(predicate).toList();
+
+    _hasMore = false; // Disable pagination for filtered results
+    notifyListeners();
+  }
+
+  /// Clear filter and reset to pagination
+  void clearFilter() {
+    _currentPage = 0;
+    _displayedTransactions = [];
+    _hasMore = true;
+    _loadNextPage();
   }
 
   /// Add a new transaction
@@ -40,53 +113,54 @@ class TransactionProvider with ChangeNotifier {
     );
 
     await _storageService.addTransaction(transaction);
-    _loadTransactions();
+    _loadTransactions(); // Reload and reset pagination
   }
 
   /// Update an existing transaction
   Future<void> updateTransaction(Transaction transaction) async {
     await _storageService.updateTransaction(transaction);
-    _loadTransactions();
+    _loadTransactions(); // Reload and reset pagination
   }
 
   /// Delete a transaction
   Future<void> deleteTransaction(String id) async {
     await _storageService.deleteTransaction(id);
-    _loadTransactions();
+    _loadTransactions(); // Reload and reset pagination
   }
 
-  /// Get transactions for today
+  /// Get transactions for today (Helper for Dashboard, not paginated)
   List<Transaction> getTodayTransactions() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
 
-    return _transactions.where((t) {
+    return _allTransactions.where((t) {
       return t.date.isAfter(today.subtract(const Duration(seconds: 1))) &&
           t.date.isBefore(tomorrow);
     }).toList();
   }
 
-  /// Get transactions for this week
+  /// Get transactions for this week (Helper for Dashboard)
   List<Transaction> getThisWeekTransactions() {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    final start =
+        DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
     final end = start.add(const Duration(days: 7));
 
-    return _transactions.where((t) {
+    return _allTransactions.where((t) {
       return t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
           t.date.isBefore(end);
     }).toList();
   }
 
-  /// Get transactions for this month
+  /// Get transactions for this month (Helper for Dashboard)
   List<Transaction> getThisMonthTransactions() {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 1);
 
-    return _transactions.where((t) {
+    return _allTransactions.where((t) {
       return t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
           t.date.isBefore(end);
     }).toList();
@@ -97,7 +171,7 @@ class TransactionProvider with ChangeNotifier {
     final start = DateTime(year, month, 1);
     final end = DateTime(year, month + 1, 1);
 
-    return _transactions.where((t) {
+    return _allTransactions.where((t) {
       return t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
           t.date.isBefore(end);
     }).toList();
@@ -119,8 +193,8 @@ class TransactionProvider with ChangeNotifier {
 
   /// Calculate balance
   double get totalBalance {
-    final income = calculateTotalIncome(_transactions);
-    final expense = calculateTotalExpense(_transactions);
+    final income = calculateTotalIncome(_allTransactions);
+    final expense = calculateTotalExpense(_allTransactions);
     return income - expense;
   }
 
@@ -136,6 +210,17 @@ class TransactionProvider with ChangeNotifier {
     }
 
     return result;
+  }
+
+  /// Get transactions for a specific date
+  List<Transaction> getTransactionsForDate(DateTime date) {
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final nextDay = targetDate.add(const Duration(days: 1));
+
+    return _allTransactions.where((t) {
+      return t.date.isAfter(targetDate.subtract(const Duration(seconds: 1))) &&
+          t.date.isBefore(nextDay);
+    }).toList();
   }
 
   /// Refresh transactions from storage
