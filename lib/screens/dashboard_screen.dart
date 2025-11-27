@@ -49,14 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           label: const Text('Transaksi'),
         );
       case 2: // Categories
-        return FloatingActionButton.extended(
-          heroTag: "add_category",
-          onPressed: () {
-            _showAddCategoryDialog(context);
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Kategori'),
-        );
+        return null; // Let CategoriesScreen handle its own FAB
       case 3: // Budgets
         return FloatingActionButton.extended(
           heroTag: "add_budget",
@@ -73,15 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  /// Show add category dialog
-  void _showAddCategoryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => _AddCategoryDialog(),
-    );
-  }
-
-  /// Show add budget dialog  
+  /// Show add budget dialog
   void _showAddBudgetDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -165,21 +150,33 @@ class _HomeTab extends StatelessWidget {
         ],
       ),
       body: Consumer3<TransactionProvider, CategoryProvider, BudgetProvider>(
-        builder: (context, transactionProvider, categoryProvider, budgetProvider, child) {
+        builder: (context, transactionProvider, categoryProvider,
+            budgetProvider, child) {
           final todayTransactions = transactionProvider.getTodayTransactions();
-          final weekTransactions = transactionProvider.getThisWeekTransactions();
-          final monthTransactions = transactionProvider.getThisMonthTransactions();
+          final weekTransactions =
+              transactionProvider.getThisWeekTransactions();
+          final monthTransactions =
+              transactionProvider.getThisMonthTransactions();
 
-          final todayIncome = transactionProvider.calculateTotalIncome(todayTransactions);
-          final todayExpense = transactionProvider.calculateTotalExpense(todayTransactions);
-          final weekIncome = transactionProvider.calculateTotalIncome(weekTransactions);
-          final weekExpense = transactionProvider.calculateTotalExpense(weekTransactions);
-          final monthIncome = transactionProvider.calculateTotalIncome(monthTransactions);
-          final monthExpense = transactionProvider.calculateTotalExpense(monthTransactions);
+          final todayIncome =
+              transactionProvider.calculateTotalIncome(todayTransactions);
+          final todayExpense =
+              transactionProvider.calculateTotalExpense(todayTransactions);
+          final weekIncome =
+              transactionProvider.calculateTotalIncome(weekTransactions);
+          final weekExpense =
+              transactionProvider.calculateTotalExpense(weekTransactions);
+          final monthIncome =
+              transactionProvider.calculateTotalIncome(monthTransactions);
+          final monthExpense =
+              transactionProvider.calculateTotalExpense(monthTransactions);
 
-          final expenseByCategory = transactionProvider.getExpenseByCategory(monthTransactions);
-          final warningBudgets = budgetProvider.getWarningBudgets(monthTransactions);
-          final recentTransactions = transactionProvider.transactions.take(5).toList();
+          final expenseByCategory =
+              transactionProvider.getExpenseByCategory(monthTransactions);
+          final warningBudgets =
+              budgetProvider.getWarningBudgets(monthTransactions);
+          final recentTransactions =
+              transactionProvider.transactions.take(5).toList();
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -276,7 +273,8 @@ class _HomeTab extends StatelessWidget {
                     ...recentTransactions.map(
                       (transaction) => TransactionListItem(
                         transaction: transaction,
-                        category: categoryProvider.getCategoryById(transaction.categoryId),
+                        category: categoryProvider
+                            .getCategoryById(transaction.categoryId),
                       ),
                     ),
                   const SizedBox(height: 80), // Space for FAB
@@ -328,164 +326,6 @@ class _BalanceCard extends StatelessWidget {
   }
 }
 
-/// Add Category Dialog
-class _AddCategoryDialog extends StatefulWidget {
-  @override
-  State<_AddCategoryDialog> createState() => _AddCategoryDialogState();
-}
-
-class _AddCategoryDialogState extends State<_AddCategoryDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  models.CategoryType _selectedType = models.CategoryType.expense;
-  String _selectedIcon = 'category';
-  Color _selectedColor = AppColors.primary;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Tambah Kategori'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Name field
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Kategori',
-                  hintText: 'Contoh: Makanan',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama kategori harus diisi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Type selector
-              const Text('Tipe Kategori'),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: RadioListTile<models.CategoryType>(
-                      title: const Text('Pemasukan'),
-                      value: models.CategoryType.income,
-                      groupValue: _selectedType,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedType = value!;
-                        });
-                      },
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  Expanded(
-                    child: RadioListTile<models.CategoryType>(
-                      title: const Text('Pengeluaran'),
-                      value: models.CategoryType.expense,
-                      groupValue: _selectedType,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedType = value!;
-                        });
-                      },
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Color selector
-              const Text('Warna'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: CategoryColors.colors.map((color) {
-                  final isSelected = _selectedColor.value == color.value;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedColor = color;
-                      });
-                    },
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: Colors.black, width: 3)
-                            : null,
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
-        ),
-        ElevatedButton(
-          onPressed: _saveCategory,
-          child: const Text('Simpan'),
-        ),
-      ],
-    );
-  }
-
-  void _saveCategory() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    try {
-      final categoryProvider = context.read<CategoryProvider>();
-      
-      await categoryProvider.addCategory(
-        name: _nameController.text.trim(),
-        type: _selectedType,
-        iconName: _selectedIcon,
-        colorValue: _selectedColor.value,
-      );
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kategori berhasil ditambahkan')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambahkan kategori: ${e.toString()}')),
-        );
-      }
-    }
-  }
-}
-
 /// Add Budget Dialog
 class _AddBudgetDialog extends StatefulWidget {
   @override
@@ -518,10 +358,9 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
               Consumer2<CategoryProvider, BudgetProvider>(
                 builder: (context, categoryProvider, budgetProvider, child) {
                   final expenseCategories = categoryProvider.expenseCategories;
-                  final existingBudgetCategories = budgetProvider.budgets
-                      .map((b) => b.categoryId)
-                      .toSet();
-                  
+                  final existingBudgetCategories =
+                      budgetProvider.budgets.map((b) => b.categoryId).toSet();
+
                   final availableCategories = expenseCategories
                       .where((c) => !existingBudgetCategories.contains(c.id))
                       .toList();
@@ -535,7 +374,8 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
 
                   // Ensure selected category is still available
                   final validSelectedCategoryId = _selectedCategoryId != null &&
-                          availableCategories.any((c) => c.id == _selectedCategoryId)
+                          availableCategories
+                              .any((c) => c.id == _selectedCategoryId)
                       ? _selectedCategoryId
                       : null;
 
@@ -580,7 +420,7 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Limit amount
               TextFormField(
                 controller: _limitController,
@@ -594,7 +434,8 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
                   if (value == null || value.isEmpty) {
                     return 'Masukkan batas anggaran';
                   }
-                  if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                  if (double.tryParse(value) == null ||
+                      double.parse(value) <= 0) {
                     return 'Batas anggaran harus lebih dari 0';
                   }
                   return null;
@@ -619,7 +460,7 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
 
   void _saveBudget() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (_selectedCategoryId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -632,11 +473,12 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
     try {
       final budgetProvider = context.read<BudgetProvider>();
       final limitAmount = double.tryParse(_limitController.text);
-      
+
       if (limitAmount == null || limitAmount <= 0) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Masukkan jumlah anggaran yang valid')),
+            const SnackBar(
+                content: Text('Masukkan jumlah anggaran yang valid')),
           );
         }
         return;
@@ -657,7 +499,8 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambahkan anggaran: ${e.toString()}')),
+          SnackBar(
+              content: Text('Gagal menambahkan anggaran: ${e.toString()}')),
         );
       }
     }

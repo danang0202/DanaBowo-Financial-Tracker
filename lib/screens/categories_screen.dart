@@ -94,7 +94,7 @@ class _CategoriesScreenState extends State<CategoriesScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _AddCategorySheet(initialType: initialType),
+      builder: (context) => CategoryFormSheet(initialType: initialType),
     );
   }
 }
@@ -204,7 +204,7 @@ class _CategoryItem extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _AddCategorySheet(category: category),
+      builder: (context) => CategoryFormSheet(category: category),
     );
   }
 
@@ -237,21 +237,21 @@ class _CategoryItem extends StatelessWidget {
 }
 
 /// Add/Edit category bottom sheet
-class _AddCategorySheet extends StatefulWidget {
+class CategoryFormSheet extends StatefulWidget {
   final Category? category;
   final CategoryType? initialType;
 
-  const _AddCategorySheet({
+  const CategoryFormSheet({
     super.key,
     this.category,
     this.initialType,
   });
 
   @override
-  State<_AddCategorySheet> createState() => _AddCategorySheetState();
+  State<CategoryFormSheet> createState() => _CategoryFormSheetState();
 }
 
-class _AddCategorySheetState extends State<_AddCategorySheet> {
+class _CategoryFormSheetState extends State<CategoryFormSheet> {
   final _nameController = TextEditingController();
   CategoryType _type = CategoryType.expense;
   String _selectedIcon = 'category';
