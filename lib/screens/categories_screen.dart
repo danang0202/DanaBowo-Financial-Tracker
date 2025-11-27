@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
+import '../widgets/premium_fab.dart';
 
 /// Screen for managing categories
 class CategoriesScreen extends StatefulWidget {
@@ -77,19 +78,19 @@ class _CategoriesScreenState extends State<CategoriesScreen>
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: PremiumFAB(
         onPressed: () {
           _showAddCategoryDialog(context);
         },
-        child: const Icon(Icons.add),
+        icon: Icons.add,
+        label: 'Kategori',
       ),
     );
   }
 
   void _showAddCategoryDialog(BuildContext context) {
-    final initialType = _tabController.index == 0
-        ? CategoryType.expense
-        : CategoryType.income;
+    final initialType =
+        _tabController.index == 0 ? CategoryType.expense : CategoryType.income;
 
     showModalBottomSheet(
       context: context,
@@ -213,7 +214,8 @@ class _CategoryItem extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Kategori'),
-        content: Text('Apakah Anda yakin ingin menghapus kategori "${category.name}"?'),
+        content: Text(
+            'Apakah Anda yakin ingin menghapus kategori "${category.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -360,7 +362,9 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      _type == CategoryType.expense ? 'Pengeluaran' : 'Pemasukan',
+                      _type == CategoryType.expense
+                          ? 'Pengeluaran'
+                          : 'Pemasukan',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -628,7 +632,8 @@ class _TypeSelectionButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Theme.of(context).cardColor,
+          color:
+              isSelected ? color.withOpacity(0.1) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : Theme.of(context).dividerColor,
@@ -645,7 +650,9 @@ class _TypeSelectionButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? color : Theme.of(context).textTheme.bodyMedium?.color,
+                color: isSelected
+                    ? color
+                    : Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

@@ -11,6 +11,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/expense_chart.dart';
 import '../widgets/budget_warning_card.dart';
+import '../widgets/premium_fab.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'categories_screen.dart';
@@ -34,8 +35,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     switch (_currentIndex) {
       case 0: // Home
       case 1: // Transactions
-        return FloatingActionButton.extended(
-          heroTag: "add_transaction",
+        return PremiumFAB(
           onPressed: () {
             Navigator.push(
               context,
@@ -44,19 +44,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           },
-          icon: const Icon(Icons.add),
-          label: const Text('Transaksi'),
+          icon: Icons.add,
+          label: 'Transaksi',
         );
       case 2: // Categories
         return null; // Let CategoriesScreen handle its own FAB
       case 3: // Budgets
-        return FloatingActionButton.extended(
-          heroTag: "add_budget",
+        return PremiumFAB(
           onPressed: () {
             _showAddBudgetDialog(context);
           },
-          icon: const Icon(Icons.add),
-          label: const Text('Anggaran'),
+          icon: Icons.add,
+          label: 'Anggaran',
         );
       case 4: // Settings
         return null; // No FAB for settings
