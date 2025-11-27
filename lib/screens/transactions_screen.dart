@@ -287,7 +287,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               );
             },
           ),
-          const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
         ],
       ),
     );

@@ -441,7 +441,7 @@ class _HomeTab extends StatelessWidget {
                                   .getCategoryById(transaction.categoryId),
                             ),
                           ),
-                        const SizedBox(height: 80), // Space for FAB
+                        const SizedBox(height: 120), // Space for Bottom Nav
                       ],
                     ),
                   ),
