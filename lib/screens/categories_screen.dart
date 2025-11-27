@@ -6,6 +6,8 @@ import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
 import '../widgets/premium_fab.dart';
 
+import '../widgets/dynamic_island_notification.dart';
+
 /// Screen for managing categories
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -225,8 +227,11 @@ class _CategoryItem extends StatelessWidget {
             onPressed: () {
               context.read<CategoryProvider>().deleteCategory(category.id);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Kategori dihapus')),
+              DynamicIslandNotification.show(
+                context,
+                message: 'Kategori dihapus',
+                icon: Icons.delete_outline,
+                color: Colors.red,
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -573,8 +578,10 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
   void _saveCategory() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan nama kategori')),
+      DynamicIslandNotification.show(
+        context,
+        message: 'Masukkan nama kategori',
+        isError: true,
       );
       return;
     }
@@ -598,12 +605,9 @@ class _CategoryFormSheetState extends State<CategoryFormSheet> {
     }
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-            Text(_isEditing ? 'Kategori diperbarui' : 'Kategori ditambahkan'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    DynamicIslandNotification.show(
+      context,
+      message: _isEditing ? 'Kategori diperbarui' : 'Kategori ditambahkan',
     );
   }
 }

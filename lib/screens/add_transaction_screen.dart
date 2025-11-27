@@ -8,6 +8,8 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
+import '../utils/formatters.dart';
+import '../widgets/dynamic_island_notification.dart';
 
 /// Screen for adding or editing transactions
 class AddTransactionScreen extends StatefulWidget {
@@ -37,7 +39,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_isEditing) {
       final t = widget.transaction!;
       _type = t.type;
-      _amountController.text = t.amount.toStringAsFixed(0);
+      _amountController.text = NumberFormat('#,###', 'id_ID').format(t.amount);
       _selectedCategoryId = t.categoryId;
       _selectedDate = t.date;
       _selectedTime = TimeOfDay.fromDateTime(t.date);
@@ -164,14 +166,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           ),
                           keyboardType: TextInputType.number,
                           inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
+                            FilteringTextInputFormatter.digitsOnly,
+                            CurrencyInputFormatter(),
                           ],
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Masukkan jumlah';
                             }
-                            if (double.tryParse(value) == null ||
-                                double.parse(value) <= 0) {
+                            if (parseCurrency(value) <= 0) {
                               return 'Jumlah harus > 0';
                             }
                             return null;
@@ -420,16 +422,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pilih kategori terlebih dahulu'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      DynamicIslandNotification.show(
+        context,
+        message: 'Pilih kategori terlebih dahulu',
+        isError: true,
       );
       return;
     }
 
-    final amount = double.parse(_amountController.text);
+    final amount = parseCurrency(_amountController.text);
     final dateTime = DateTime(
       _selectedDate.year,
       _selectedDate.month,
@@ -461,14 +462,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isEditing
-            ? 'Transaksi diperbarui'
-            : 'Transaksi berhasil disimpan'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.success,
-      ),
+    DynamicIslandNotification.show(
+      context,
+      message:
+          _isEditing ? 'Transaksi diperbarui' : 'Transaksi berhasil disimpan',
+      color: AppColors.success,
     );
   }
 
@@ -491,11 +489,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   .deleteTransaction(widget.transaction!.id);
               Navigator.pop(context);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Transaksi dihapus'),
-                  behavior: SnackBarBehavior.floating,
-                ),
+              DynamicIslandNotification.show(
+                context,
+                message: 'Transaksi dihapus',
+                icon: Icons.delete_outline,
+                color: Colors.red,
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

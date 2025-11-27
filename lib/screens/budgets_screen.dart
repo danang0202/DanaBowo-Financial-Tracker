@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../models/budget.dart';
 import '../providers/budget_provider.dart';
 import '../providers/category_provider.dart';
@@ -8,6 +9,7 @@ import '../providers/transaction_provider.dart';
 import '../utils/formatters.dart';
 import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
+import '../widgets/dynamic_island_notification.dart';
 
 /// Screen for managing budgets
 class BudgetsScreen extends StatelessWidget {
@@ -336,8 +338,11 @@ class _BudgetItem extends StatelessWidget {
             onPressed: () {
               context.read<BudgetProvider>().deleteBudget(budget.id);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Anggaran dihapus')),
+              DynamicIslandNotification.show(
+                context,
+                message: 'Anggaran dihapus',
+                icon: Icons.delete_outline,
+                color: Colors.red,
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -371,7 +376,8 @@ class _AddBudgetSheetState extends State<AddBudgetSheet> {
     super.initState();
     if (_isEditing) {
       final b = widget.budget!;
-      _amountController.text = b.limitAmount.toStringAsFixed(0);
+      _amountController.text =
+          NumberFormat('#,###', 'id_ID').format(b.limitAmount);
       _selectedCategoryId = b.categoryId;
       _notificationEnabled = b.notificationEnabled;
     }
@@ -554,7 +560,10 @@ class _AddBudgetSheetState extends State<AddBudgetSheet> {
                 fillColor: Theme.of(context).cardColor,
               ),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                CurrencyInputFormatter(),
+              ],
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
@@ -618,23 +627,29 @@ class _AddBudgetSheetState extends State<AddBudgetSheet> {
   void _saveBudget() {
     final amountText = _amountController.text.trim();
     if (amountText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan batas anggaran')),
+      DynamicIslandNotification.show(
+        context,
+        message: 'Masukkan batas anggaran',
+        isError: true,
       );
       return;
     }
 
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Batas anggaran harus lebih dari 0')),
+    final amount = parseCurrency(amountText);
+    if (amount <= 0) {
+      DynamicIslandNotification.show(
+        context,
+        message: 'Batas anggaran harus lebih dari 0',
+        isError: true,
       );
       return;
     }
 
     if (!_isEditing && _selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih kategori terlebih dahulu')),
+      DynamicIslandNotification.show(
+        context,
+        message: 'Pilih kategori terlebih dahulu',
+        isError: true,
       );
       return;
     }
@@ -656,12 +671,9 @@ class _AddBudgetSheetState extends State<AddBudgetSheet> {
     }
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-            Text(_isEditing ? 'Anggaran diperbarui' : 'Anggaran ditambahkan'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    DynamicIslandNotification.show(
+      context,
+      message: _isEditing ? 'Anggaran diperbarui' : 'Anggaran ditambahkan',
     );
   }
 }

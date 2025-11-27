@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 /// Format currency in Indonesian Rupiah
 String formatCurrency(double amount) {
@@ -69,4 +70,31 @@ List<String> parseTags(String? note) {
   final regex = RegExp(r'#(\w+)');
   final matches = regex.allMatches(note);
   return matches.map((m) => m.group(1)!).toList();
+}
+
+/// Parse formatted currency string to double
+double parseCurrency(String value) {
+  return double.tryParse(value.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+}
+
+/// Input formatter for currency
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    double value = double.parse(newValue.text.replaceAll(RegExp(r'[^\d]'), ''));
+    final formatter = NumberFormat('#,###', 'id_ID');
+    String newText = formatter.format(value);
+
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
 }
