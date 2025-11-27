@@ -11,6 +11,7 @@ import '../utils/constants.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/expense_chart.dart';
+import '../widgets/income_chart.dart';
 import '../widgets/budget_warning_card.dart';
 
 import 'add_transaction_screen.dart';
@@ -201,6 +202,8 @@ class _HomeTab extends StatelessWidget {
 
           final expenseByCategory =
               transactionProvider.getExpenseByCategory(monthTransactions);
+          final incomeByCategory =
+              transactionProvider.getIncomeByCategory(monthTransactions);
           final warningBudgets =
               budgetProvider.getWarningBudgets(monthTransactions);
           final recentTransactions =
@@ -394,6 +397,25 @@ class _HomeTab extends StatelessWidget {
                           expense: monthExpense,
                         ),
                         const SizedBox(height: 24),
+
+                        // Income chart
+                        if (incomeByCategory.isNotEmpty) ...[
+                          Text(
+                            'Pemasukan Bulan Ini',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          IncomeChart(
+                            incomeByCategory: incomeByCategory,
+                            categoryProvider: categoryProvider,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
 
                         // Expense chart
                         if (expenseByCategory.isNotEmpty) ...[

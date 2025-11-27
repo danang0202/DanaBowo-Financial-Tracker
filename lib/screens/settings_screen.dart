@@ -265,32 +265,109 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () async {
-              await storageService.clearAllData();
-              // Refresh providers
-              if (context.mounted) {
-                context.read<TransactionProvider>().refresh();
-                context.read<CategoryProvider>().refresh();
-                context.read<BudgetProvider>().refresh();
-              }
-              if (dialogContext.mounted) {
-                Navigator.pop(dialogContext);
-              }
-              if (context.mounted) {
-                DynamicIslandNotification.show(
-                  context,
-                  message: 'Semua data berhasil dihapus',
-                  icon: Icons.delete_forever_rounded,
-                  color: Colors.red,
-                );
-              }
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _showFinalConfirmationDialog(context, storageService);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Hapus'),
+            child: const Text('Ya, Hapus'),
           ),
         ],
       ),
     );
+  }
+
+  void _showFinalConfirmationDialog(
+      BuildContext context, StorageService storageService) {
+    final TextEditingController controller = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    const String confirmationText = 'Saya yakin untuk menghapus data saya';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Konfirmasi Akhir'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Ketik kalimat berikut untuk mengonfirmasi:',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              confirmationText,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Form(
+              key: formKey,
+              child: TextFormField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Ketik di sini...',
+                ),
+                validator: (value) {
+                  if (value != confirmationText) {
+                    return 'Kalimat tidak sesuai';
+                  }
+                  return null;
+                },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Batal'),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: controller,
+            builder: (context, value, child) {
+              return TextButton(
+                onPressed: value.text == confirmationText
+                    ? () async {
+                        if (formKey.currentState!.validate()) {
+                          Navigator.pop(dialogContext);
+                          await _performDelete(context, storageService);
+                        }
+                      }
+                    : null,
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Hapus Permanen'),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performDelete(
+      BuildContext context, StorageService storageService) async {
+    await storageService.clearAllData();
+    // Refresh providers
+    if (context.mounted) {
+      context.read<TransactionProvider>().refresh();
+      context.read<CategoryProvider>().refresh();
+      context.read<BudgetProvider>().refresh();
+    }
+    if (context.mounted) {
+      DynamicIslandNotification.show(
+        context,
+        message: 'Semua data berhasil dihapus',
+        icon: Icons.delete_forever_rounded,
+        color: Colors.red,
+      );
+    }
   }
 }
 

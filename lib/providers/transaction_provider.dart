@@ -221,6 +221,20 @@ class TransactionProvider with ChangeNotifier {
     return result;
   }
 
+  /// Get income by category for a list of transactions
+  Map<String, double> getIncomeByCategory(List<Transaction> transactions) {
+    final Map<String, double> result = {};
+
+    for (final transaction in transactions) {
+      if (transaction.type == TransactionType.income) {
+        result[transaction.categoryId] =
+            (result[transaction.categoryId] ?? 0) + transaction.amount;
+      }
+    }
+
+    return result;
+  }
+
   /// Get transactions for a specific date
   List<Transaction> getTransactionsForDate(DateTime date) {
     final targetDate = DateTime(date.year, date.month, date.day);
