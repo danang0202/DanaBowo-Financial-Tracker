@@ -4,6 +4,7 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../widgets/transaction_list_item.dart';
 import '../utils/formatters.dart';
+import '../utils/constants.dart';
 import 'add_transaction_screen.dart';
 
 /// Screen for displaying all transactions
@@ -16,43 +17,80 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transaksi'),
-      ),
-      body: Consumer2<TransactionProvider, CategoryProvider>(
-        builder: (context, transactionProvider, categoryProvider, child) {
-          var transactions = transactionProvider.transactions;
-
-          // Filter by search query
-          if (_searchQuery.isNotEmpty) {
-            transactions = transactions.where((t) {
-              final category = categoryProvider.getCategoryById(t.categoryId);
-              final categoryName = category?.name.toLowerCase() ?? '';
-              final note = t.note?.toLowerCase() ?? '';
-              final query = _searchQuery.toLowerCase();
-              return categoryName.contains(query) || note.contains(query);
-            }).toList();
-          }
-
-          // Group transactions by date
-          final groupedTransactions = _groupTransactionsByDate(transactions);
-
-          return Column(
-            children: [
-              // Search bar
-              Padding(
-                padding: const EdgeInsets.all(16),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 120.0,
+            floating: true,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+              title: Text(
+                'Riwayat Transaksi',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.titleLarge?.color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primary.withOpacity(0.05),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.filter_list_rounded),
+                onPressed: () {
+                  // TODO: Implement filter
+                },
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: 'Cari transaksi...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear),
+                            icon: const Icon(Icons.clear_rounded),
                             onPressed: () {
                               setState(() {
                                 _searchQuery = '';
@@ -60,6 +98,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             },
                           )
                         : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.transparent,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -68,77 +113,154 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   },
                 ),
               ),
+            ),
+          ),
+          Consumer2<TransactionProvider, CategoryProvider>(
+            builder: (context, transactionProvider, categoryProvider, child) {
+              var transactions = transactionProvider.transactions;
 
-              // Transaction list
-              Expanded(
-                child: transactions.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              size: 64,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Belum ada transaksi',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+              // Filter by search query
+              if (_searchQuery.isNotEmpty) {
+                transactions = transactions.where((t) {
+                  final category =
+                      categoryProvider.getCategoryById(t.categoryId);
+                  final categoryName = category?.name.toLowerCase() ?? '';
+                  final note = t.note?.toLowerCase() ?? '';
+                  final query = _searchQuery.toLowerCase();
+                  return categoryName.contains(query) || note.contains(query);
+                }).toList();
+              }
+
+              if (transactions.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).dividerColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.receipt_long_rounded,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: groupedTransactions.length,
-                        itemBuilder: (context, index) {
-                          final entry = groupedTransactions.entries.elementAt(index);
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Tidak ada transaksi ditemukan'
+                              : 'Belum ada transaksi',
+                          style: TextStyle(
+                            color: Theme.of(context).disabledColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Group transactions by date
+              final groupedTransactions =
+                  _groupTransactionsByDate(transactions);
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final entry = groupedTransactions.entries.elementAt(index);
+                    final date = entry.key;
+                    final dayTransactions = entry.value;
+
+                    // Calculate daily total
+                    double dailyIncome = 0;
+                    double dailyExpense = 0;
+                    for (var t in dayTransactions) {
+                      if (t.type.toString().contains('income')) {
+                        dailyIncome += t.amount;
+                      } else {
+                        dailyExpense += t.amount;
+                      }
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                child: Text(
-                                  formatRelativeDate(entry.key),
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              Text(
+                                formatRelativeDate(date),
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
                               ),
-                              ...entry.value.map(
-                                (transaction) => TransactionListItem(
-                                  transaction: transaction,
-                                  category: categoryProvider.getCategoryById(transaction.categoryId),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AddTransactionScreen(
-                                          transaction: transaction,
-                                        ),
-                                      ),
-                                    );
-                                  },
+                              Text(
+                                formatCurrency(dailyIncome - dailyExpense),
+                                style: TextStyle(
+                                  color: (dailyIncome - dailyExpense) >= 0
+                                      ? AppColors.income
+                                      : AppColors.expense,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
-                          );
-                        },
-                      ),
-              ),
-            ],
-          );
-        },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            children:
+                                dayTransactions.map<Widget>((transaction) {
+                              return TransactionListItem(
+                                transaction: transaction,
+                                category: categoryProvider
+                                    .getCategoryById(transaction.categoryId),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AddTransactionScreen(
+                                        transaction: transaction,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  childCount: groupedTransactions.length,
+                ),
+              );
+            },
+          ),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+        ],
       ),
     );
   }
 
-  Map<DateTime, List<dynamic>> _groupTransactionsByDate(List<dynamic> transactions) {
+  Map<DateTime, List<dynamic>> _groupTransactionsByDate(
+      List<dynamic> transactions) {
     final Map<DateTime, List<dynamic>> grouped = {};
 
     for (final transaction in transactions) {

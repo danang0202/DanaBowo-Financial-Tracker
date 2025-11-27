@@ -133,21 +133,7 @@ class _HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Danabowo'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ExportScreen()),
-              );
-            },
-            tooltip: 'Export Laporan',
-          ),
-        ],
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer3<TransactionProvider, CategoryProvider, BudgetProvider>(
         builder: (context, transactionProvider, categoryProvider,
             budgetProvider, child) {
@@ -181,104 +167,159 @@ class _HomeTab extends StatelessWidget {
             onRefresh: () async {
               // Refresh data
             },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Balance Card
-                  _BalanceCard(balance: transactionProvider.totalBalance),
-                  const SizedBox(height: 16),
-
-                  // Budget warnings
-                  if (warningBudgets.isNotEmpty) ...[
-                    Text(
-                      'Peringatan Anggaran',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...warningBudgets.map((status) => BudgetWarningCard(
-                          status: status,
-                          categoryProvider: categoryProvider,
-                        )),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Summary cards
-                  Text(
-                    'Ringkasan',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  SummaryCard(
-                    title: 'Hari Ini',
-                    income: todayIncome,
-                    expense: todayExpense,
-                  ),
-                  const SizedBox(height: 8),
-                  SummaryCard(
-                    title: 'Minggu Ini',
-                    income: weekIncome,
-                    expense: weekExpense,
-                  ),
-                  const SizedBox(height: 8),
-                  SummaryCard(
-                    title: 'Bulan Ini',
-                    income: monthIncome,
-                    expense: monthExpense,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Expense chart
-                  if (expenseByCategory.isNotEmpty) ...[
-                    Text(
-                      'Pengeluaran Bulan Ini',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    ExpenseChart(
-                      expenseByCategory: expenseByCategory,
-                      categoryProvider: categoryProvider,
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-
-                  // Recent transactions
-                  Text(
-                    'Transaksi Terbaru',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (recentTransactions.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text(
-                          'Belum ada transaksi',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    )
-                  else
-                    ...recentTransactions.map(
-                      (transaction) => TransactionListItem(
-                        transaction: transaction,
-                        category: categoryProvider
-                            .getCategoryById(transaction.categoryId),
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 120.0,
+                  floating: true,
+                  pinned: true,
+                  elevation: 0,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                    title: Text(
+                      'DanaBowo',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.titleLarge?.color,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  const SizedBox(height: 80), // Space for FAB
-                ],
-              ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.primary.withOpacity(0.05),
+                            Theme.of(context).scaffoldBackgroundColor,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.file_download_outlined),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ExportScreen()),
+                        );
+                      },
+                      tooltip: 'Export Laporan',
+                    ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Balance Card
+                        _BalanceCard(balance: transactionProvider.totalBalance),
+                        const SizedBox(height: 16),
+
+                        // Budget warnings
+                        if (warningBudgets.isNotEmpty) ...[
+                          Text(
+                            'Peringatan Anggaran',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          ...warningBudgets.map((status) => BudgetWarningCard(
+                                status: status,
+                                categoryProvider: categoryProvider,
+                              )),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Summary cards
+                        Text(
+                          'Ringkasan',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 8),
+                        SummaryCard(
+                          title: 'Hari Ini',
+                          income: todayIncome,
+                          expense: todayExpense,
+                        ),
+                        const SizedBox(height: 8),
+                        SummaryCard(
+                          title: 'Minggu Ini',
+                          income: weekIncome,
+                          expense: weekExpense,
+                        ),
+                        const SizedBox(height: 8),
+                        SummaryCard(
+                          title: 'Bulan Ini',
+                          income: monthIncome,
+                          expense: monthExpense,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Expense chart
+                        if (expenseByCategory.isNotEmpty) ...[
+                          Text(
+                            'Pengeluaran Bulan Ini',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          ExpenseChart(
+                            expenseByCategory: expenseByCategory,
+                            categoryProvider: categoryProvider,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Recent transactions
+                        Text(
+                          'Transaksi Terbaru',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (recentTransactions.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32),
+                              child: Text(
+                                'Belum ada transaksi',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          )
+                        else
+                          ...recentTransactions.map(
+                            (transaction) => TransactionListItem(
+                              transaction: transaction,
+                              category: categoryProvider
+                                  .getCategoryById(transaction.categoryId),
+                            ),
+                          ),
+                        const SizedBox(height: 80), // Space for FAB
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },

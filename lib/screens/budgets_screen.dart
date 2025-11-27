@@ -18,9 +18,7 @@ class BudgetsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Anggaran'),
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer3<BudgetProvider, CategoryProvider, TransactionProvider>(
         builder: (context, budgetProvider, categoryProvider,
             transactionProvider, child) {
@@ -28,57 +26,107 @@ class BudgetsScreen extends StatelessWidget {
           final monthTransactions =
               transactionProvider.getThisMonthTransactions();
 
-          if (budgets.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Belum ada anggaran',
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 120.0,
+                floating: true,
+                pinned: true,
+                elevation: 0,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                  title: Text(
+                    'Anggaran',
                     style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tambah anggaran untuk melacak pengeluaran',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 14,
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.primary.withOpacity(0.05),
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            );
-          }
+              if (budgets.isEmpty)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).dividerColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.account_balance_wallet_rounded,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Belum ada anggaran',
+                          style: TextStyle(
+                            color: Theme.of(context).disabledColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tambah anggaran untuk melacak pengeluaran',
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .disabledColor
+                                .withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final budget = budgets[index];
+                        final status = budgetProvider.calculateBudgetStatus(
+                          budget.categoryId,
+                          monthTransactions,
+                        );
+                        final category =
+                            categoryProvider.getCategoryById(budget.categoryId);
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: budgets.length,
-            itemBuilder: (context, index) {
-              final budget = budgets[index];
-              final status = budgetProvider.calculateBudgetStatus(
-                budget.categoryId,
-                monthTransactions,
-              );
-              final category =
-                  categoryProvider.getCategoryById(budget.categoryId);
-
-              return _BudgetItem(
-                budget: budget,
-                status: status,
-                categoryName: category?.name ?? 'Unknown',
-                categoryIcon: category?.iconName ?? 'category',
-                categoryColor: category?.colorValue ?? 0xFF2196F3,
-              );
-            },
+                        return _BudgetItem(
+                          budget: budget,
+                          status: status,
+                          categoryName: category?.name ?? 'Unknown',
+                          categoryIcon: category?.iconName ?? 'category',
+                          categoryColor: category?.colorValue ?? 0xFF2196F3,
+                        );
+                      },
+                      childCount: budgets.length,
+                    ),
+                  ),
+                ),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
+            ],
           );
         },
       ),

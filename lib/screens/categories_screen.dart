@@ -35,50 +35,93 @@ class _CategoriesScreenState extends State<CategoriesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kategori'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Pengeluaran'),
-            Tab(text: 'Pemasukan'),
-          ],
-        ),
-        actions: [
-          PopupMenuButton<CategorySortType>(
-            icon: const Icon(Icons.sort),
-            onSelected: (type) {
-              context.read<CategoryProvider>().setSortType(type);
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: CategorySortType.usageFrequency,
-                child: Text('Urutkan berdasarkan penggunaan'),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              expandedHeight: 120.0,
+              floating: true,
+              pinned: true,
+              elevation: 0,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.only(left: 16, bottom: 60),
+                title: Text(
+                  'Kategori',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.titleLarge?.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.primary.withOpacity(0.05),
+                        Theme.of(context).scaffoldBackgroundColor,
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              const PopupMenuItem(
-                value: CategorySortType.alphabetical,
-                child: Text('Urutkan berdasarkan abjad'),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: AppColors.primary,
+                    indicatorWeight: 3,
+                    tabs: const [
+                      Tab(text: 'Pengeluaran'),
+                      Tab(text: 'Pemasukan'),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-        ],
-      ),
-      body: Consumer<CategoryProvider>(
-        builder: (context, categoryProvider, child) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _CategoryList(
-                categories: categoryProvider.expenseCategories,
-                type: CategoryType.expense,
-              ),
-              _CategoryList(
-                categories: categoryProvider.incomeCategories,
-                type: CategoryType.income,
-              ),
-            ],
-          );
+              actions: [
+                PopupMenuButton<CategorySortType>(
+                  icon: const Icon(Icons.sort_rounded),
+                  onSelected: (type) {
+                    context.read<CategoryProvider>().setSortType(type);
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: CategorySortType.usageFrequency,
+                      child: Text('Urutkan berdasarkan penggunaan'),
+                    ),
+                    const PopupMenuItem(
+                      value: CategorySortType.alphabetical,
+                      child: Text('Urutkan berdasarkan abjad'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ];
         },
+        body: Consumer<CategoryProvider>(
+          builder: (context, categoryProvider, child) {
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _CategoryList(
+                  categories: categoryProvider.expenseCategories,
+                  type: CategoryType.expense,
+                ),
+                _CategoryList(
+                  categories: categoryProvider.incomeCategories,
+                  type: CategoryType.income,
+                ),
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: PremiumFAB(
         onPressed: () {
