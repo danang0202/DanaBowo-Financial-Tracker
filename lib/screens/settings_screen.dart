@@ -135,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'DanaBowo',
+                              'DanaKu',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,

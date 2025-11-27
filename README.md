@@ -1,4 +1,4 @@
-# Danabowo - Financial Tracker
+# DanaKu - Financial Tracker
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.5.0+-blue.svg" alt="Flutter Version">

@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="danabowo_financial_tracker"
+        android:label="DanaKu"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

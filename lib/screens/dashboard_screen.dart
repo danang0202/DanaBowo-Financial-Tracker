@@ -242,7 +242,7 @@ class _HomeTab extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'DanaBowo',
+                          'DanaKu',
                           style: TextStyle(
                             color:
                                 Theme.of(context).textTheme.titleLarge?.color,
