@@ -213,6 +213,9 @@ class _CategoryItem extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.3),
+        ),
       ),
       child: Material(
         color: Colors.transparent,

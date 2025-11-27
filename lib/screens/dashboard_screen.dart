@@ -30,49 +30,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
 
-  /// Build FloatingActionButton based on current tab
-  Widget? _buildFloatingActionButton(BuildContext context) {
-    switch (_currentIndex) {
-      case 0: // Home
-      case 1: // Transactions
-        return PremiumFAB(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddTransactionScreen(),
-              ),
-            );
-          },
-          icon: Icons.add,
-          label: 'Transaksi',
-        );
-      case 2: // Categories
-        return null; // Let CategoriesScreen handle its own FAB
-      case 3: // Budgets
-        return PremiumFAB(
-          onPressed: () {
-            _showAddBudgetDialog(context);
-          },
-          icon: Icons.add,
-          label: 'Anggaran',
-        );
-      case 4: // Settings
-        return null; // No FAB for settings
-      default:
-        return null;
-    }
-  }
-
-  /// Show add budget dialog
-  void _showAddBudgetDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => const AddBudgetSheet(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,7 +78,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(context),
     );
   }
 }
@@ -177,12 +133,36 @@ class _HomeTab extends StatelessWidget {
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   flexibleSpace: FlexibleSpaceBar(
                     titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                    title: Text(
-                      'DanaBowo',
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.titleLarge?.color,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    title: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            image: const DecorationImage(
+                              image: AssetImage('assets/icon.png'),
+                              fit: BoxFit.cover,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'DanaBowo',
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).textTheme.titleLarge?.color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                     background: Container(
                       decoration: BoxDecoration(
@@ -198,16 +178,42 @@ class _HomeTab extends StatelessWidget {
                     ),
                   ),
                   actions: [
-                    IconButton(
-                      icon: const Icon(Icons.file_download_outlined),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ExportScreen()),
-                        );
-                      },
-                      tooltip: 'Export Laporan',
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ExportScreen()),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .dividerColor
+                                  .withOpacity(0.1),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.file_download_rounded,
+                            color: AppColors.primary,
+                            size: 22,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -323,6 +329,18 @@ class _HomeTab extends StatelessWidget {
             ),
           );
         },
+      ),
+      floatingActionButton: PremiumFAB(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTransactionScreen(),
+            ),
+          );
+        },
+        icon: Icons.add,
+        label: 'Transaksi',
       ),
     );
   }

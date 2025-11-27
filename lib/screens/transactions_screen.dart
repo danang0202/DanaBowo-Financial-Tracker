@@ -5,6 +5,7 @@ import '../providers/category_provider.dart';
 import '../widgets/transaction_list_item.dart';
 import '../utils/formatters.dart';
 import '../utils/constants.dart';
+import '../widgets/premium_fab.dart';
 import 'add_transaction_screen.dart';
 
 /// Screen for displaying all transactions
@@ -255,6 +256,18 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
+      ),
+      floatingActionButton: PremiumFAB(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTransactionScreen(),
+            ),
+          );
+        },
+        icon: Icons.add,
+        label: 'Transaksi',
       ),
     );
   }

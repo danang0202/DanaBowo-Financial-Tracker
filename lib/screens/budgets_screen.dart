@@ -11,6 +11,8 @@ import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
 import '../widgets/dynamic_island_notification.dart';
 
+import '../widgets/premium_fab.dart';
+
 /// Screen for managing budgets
 class BudgetsScreen extends StatelessWidget {
   const BudgetsScreen({super.key});
@@ -130,11 +132,12 @@ class BudgetsScreen extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: PremiumFAB(
         onPressed: () {
           _showAddBudgetDialog(context);
         },
-        child: const Icon(Icons.add),
+        icon: Icons.add,
+        label: 'Anggaran',
       ),
     );
   }
@@ -192,6 +195,9 @@ class _BudgetItem extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withOpacity(0.3),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
