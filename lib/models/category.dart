@@ -92,91 +92,91 @@ class Category extends HiveObject {
 class DefaultCategories {
   static List<Category> getDefaultCategories() {
     return [
-      // Income categories
+      // Income categories - Modern soft colors
       Category(
         id: 'salary',
         name: 'Gaji',
         type: CategoryType.income,
         iconName: 'work',
-        colorValue: 0xFF4CAF50,
+        colorValue: 0xFF10B981, // Soft emerald
       ),
       Category(
         id: 'investment',
         name: 'Investasi',
         type: CategoryType.income,
         iconName: 'trending_up',
-        colorValue: 0xFF8BC34A,
+        colorValue: 0xFF059669, // Dark emerald
       ),
       Category(
         id: 'bonus',
         name: 'Bonus',
         type: CategoryType.income,
         iconName: 'card_giftcard',
-        colorValue: 0xFF00BCD4,
+        colorValue: 0xFF14B8A6, // Soft teal
       ),
       Category(
         id: 'other_income',
         name: 'Lainnya',
         type: CategoryType.income,
         iconName: 'attach_money',
-        colorValue: 0xFF009688,
+        colorValue: 0xFF22C55E, // Soft green
       ),
-      // Expense categories
+      // Expense categories - Modern soft colors
       Category(
         id: 'food',
         name: 'Makanan',
         type: CategoryType.expense,
         iconName: 'restaurant',
-        colorValue: 0xFFFF5722,
+        colorValue: 0xFFF97316, // Soft orange
       ),
       Category(
         id: 'transport',
         name: 'Transportasi',
         type: CategoryType.expense,
         iconName: 'directions_car',
-        colorValue: 0xFF3F51B5,
+        colorValue: 0xFF3B82F6, // Soft blue
       ),
       Category(
         id: 'shopping',
         name: 'Belanja',
         type: CategoryType.expense,
         iconName: 'shopping_cart',
-        colorValue: 0xFFE91E63,
+        colorValue: 0xFFEC4899, // Soft pink
       ),
       Category(
         id: 'entertainment',
         name: 'Hiburan',
         type: CategoryType.expense,
         iconName: 'movie',
-        colorValue: 0xFF9C27B0,
+        colorValue: 0xFFA855F7, // Soft purple
       ),
       Category(
         id: 'health',
         name: 'Kesehatan',
         type: CategoryType.expense,
         iconName: 'local_hospital',
-        colorValue: 0xFFF44336,
+        colorValue: 0xFFEF4444, // Soft red
       ),
       Category(
         id: 'education',
         name: 'Pendidikan',
         type: CategoryType.expense,
         iconName: 'school',
-        colorValue: 0xFF2196F3,
+        colorValue: 0xFF6366F1, // Soft indigo
       ),
       Category(
         id: 'bills',
         name: 'Tagihan',
         type: CategoryType.expense,
         iconName: 'receipt',
-        colorValue: 0xFF795548,
+        colorValue: 0xFF92400E, // Soft brown
       ),
       Category(
         id: 'other_expense',
         name: 'Lainnya',
         type: CategoryType.expense,
         iconName: 'more_horiz',
-        colorValue: 0xFF607D8B,
+        colorValue: 0xFF64748B, // Soft slate
       ),
     ];
   }

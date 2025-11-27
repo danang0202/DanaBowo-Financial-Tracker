@@ -153,17 +153,46 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             const SizedBox(height: 32),
 
             // Save button
-            ElevatedButton(
-              onPressed: _saveTransaction,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: _type == TransactionType.income
-                    ? AppColors.income
-                    : AppColors.expense,
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: _type == TransactionType.income
+                      ? [AppColors.income, AppColors.incomeDark]
+                      : [AppColors.expense, AppColors.expenseDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_type == TransactionType.income
+                            ? AppColors.income
+                            : AppColors.expense)
+                        .withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Text(
-                _isEditing ? 'Simpan Perubahan' : 'Simpan Transaksi',
-                style: const TextStyle(fontSize: 16),
+              child: ElevatedButton(
+                onPressed: _saveTransaction,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  _isEditing ? 'Simpan Perubahan' : 'Simpan Transaksi',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
@@ -307,29 +336,43 @@ class _TypeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected 
+              ? color.withOpacity(0.1) 
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
-            width: 2,
+            color: isSelected ? color : AppColors.border,
+            width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected 
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.grey,
+              color: isSelected ? color : AppColors.textSecondary,
+              size: 20,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey,
-                fontWeight: FontWeight.bold,
+                color: isSelected ? color : AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
             ),
           ],
@@ -366,32 +409,64 @@ class _CategorySelector extends StatelessWidget {
           runSpacing: 8,
           children: categories.map((category) {
             final isSelected = category.id == selectedCategoryId;
+            final categoryColor = Color(category.colorValue);
+            final bgIndex = CategoryColors.colors.indexOf(categoryColor);
+            final backgroundColor = bgIndex != -1 
+                ? CategoryColors.backgroundColors[bgIndex] 
+                : categoryColor.withOpacity(0.1);
+                
             return GestureDetector(
               onTap: () => onChanged(category.id),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? Color(category.colorValue) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
+                  color: isSelected 
+                      ? categoryColor.withOpacity(0.15)
+                      : backgroundColor,
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Color(category.colorValue),
-                    width: 2,
+                    color: isSelected 
+                        ? categoryColor 
+                        : categoryColor.withOpacity(0.3),
+                    width: isSelected ? 2 : 1,
                   ),
+                  boxShadow: isSelected 
+                      ? [
+                          BoxShadow(
+                            color: categoryColor.withOpacity(0.2),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      IconHelper.getIcon(category.iconName),
-                      size: 18,
-                      color: isSelected ? Colors.white : Color(category.colorValue),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isSelected 
+                            ? categoryColor
+                            : categoryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        IconHelper.getIcon(category.iconName),
+                        size: 16,
+                        color: isSelected 
+                            ? Colors.white 
+                            : categoryColor,
+                      ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Text(
                       category.name,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : Color(category.colorValue),
-                        fontWeight: FontWeight.w500,
+                        color: categoryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
                       ),
                     ),
                   ],
