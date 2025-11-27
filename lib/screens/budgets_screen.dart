@@ -20,9 +20,11 @@ class BudgetsScreen extends StatelessWidget {
         title: const Text('Anggaran'),
       ),
       body: Consumer3<BudgetProvider, CategoryProvider, TransactionProvider>(
-        builder: (context, budgetProvider, categoryProvider, transactionProvider, child) {
+        builder: (context, budgetProvider, categoryProvider,
+            transactionProvider, child) {
           final budgets = budgetProvider.budgets;
-          final monthTransactions = transactionProvider.getThisMonthTransactions();
+          final monthTransactions =
+              transactionProvider.getThisMonthTransactions();
 
           if (budgets.isEmpty) {
             return Center(
@@ -64,7 +66,8 @@ class BudgetsScreen extends StatelessWidget {
                 budget.categoryId,
                 monthTransactions,
               );
-              final category = categoryProvider.getCategoryById(budget.categoryId);
+              final category =
+                  categoryProvider.getCategoryById(budget.categoryId);
 
               return _BudgetItem(
                 budget: budget,
@@ -90,7 +93,7 @@ class BudgetsScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => const _AddBudgetSheet(),
+      builder: (context) => const AddBudgetSheet(),
     );
   }
 }
@@ -246,7 +249,9 @@ class _BudgetItem extends StatelessWidget {
                       formatCurrency(remaining),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: remaining >= 0 ? AppColors.success : AppColors.error,
+                        color: remaining >= 0
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                     ),
                   ],
@@ -312,7 +317,7 @@ class _BudgetItem extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _AddBudgetSheet(budget: budget),
+      builder: (context) => AddBudgetSheet(budget: budget),
     );
   }
 
@@ -345,16 +350,16 @@ class _BudgetItem extends StatelessWidget {
 }
 
 /// Add/Edit budget bottom sheet
-class _AddBudgetSheet extends StatefulWidget {
+class AddBudgetSheet extends StatefulWidget {
   final Budget? budget;
 
-  const _AddBudgetSheet({this.budget});
+  const AddBudgetSheet({super.key, this.budget});
 
   @override
-  State<_AddBudgetSheet> createState() => _AddBudgetSheetState();
+  State<AddBudgetSheet> createState() => _AddBudgetSheetState();
 }
 
-class _AddBudgetSheetState extends State<_AddBudgetSheet> {
+class _AddBudgetSheetState extends State<AddBudgetSheet> {
   final _amountController = TextEditingController();
   String? _selectedCategoryId;
   bool _notificationEnabled = true;
@@ -386,18 +391,42 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
       ),
       child: Container(
         padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
             Text(
               _isEditing ? 'Edit Anggaran' : 'Tambah Anggaran',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 24),
 
             // Category selector
             if (!_isEditing) ...[
+              Text(
+                'Pilih Kategori',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 12),
               Consumer<CategoryProvider>(
                 builder: (context, categoryProvider, child) {
                   final expenseCategories = categoryProvider.expenseCategories;
@@ -410,72 +439,174 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                       .where((c) => !existingBudgetCategories.contains(c.id))
                       .toList();
 
-                  return DropdownButtonFormField<String>(
-                    value: _selectedCategoryId,
-                    decoration: const InputDecoration(
-                      labelText: 'Kategori',
-                      hintText: 'Pilih kategori',
-                    ),
-                    items: availableCategories.map<DropdownMenuItem<String>>((category) {
-                      return DropdownMenuItem<String>(
-                        value: category.id,
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: Color(category.colorValue),
-                              child: Icon(
-                                IconHelper.getIcon(category.iconName),
-                                color: Colors.white,
-                                size: 16,
+                  if (availableCategories.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: Colors.orange),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Semua kategori pengeluaran sudah memiliki anggaran.',
+                              style: TextStyle(color: Colors.orange[800]),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: availableCategories.length,
+                      itemBuilder: (context, index) {
+                        final category = availableCategories[index];
+                        final isSelected = category.id == _selectedCategoryId;
+                        final color = Color(category.colorValue);
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _selectedCategoryId = category.id);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 80,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? color.withOpacity(0.15)
+                                    : Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? color
+                                      : Theme.of(context).dividerColor,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: color,
+                                    child: Icon(
+                                      IconHelper.getIcon(category.iconName),
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    category.name,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isSelected
+                                          ? color
+                                          : Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Text(category.name),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() => _selectedCategoryId = value);
-                    },
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
             ],
 
             // Amount input
             TextField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Batas Anggaran',
                 prefixText: 'Rp ',
                 hintText: '0',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).cardColor,
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            ),
-            const SizedBox(height: 16),
-
-            // Notification toggle
-            SwitchListTile(
-              title: const Text('Notifikasi Peringatan'),
-              subtitle: const Text('Peringatan saat 80% terpakai'),
-              value: _notificationEnabled,
-              onChanged: (value) {
-                setState(() => _notificationEnabled = value);
-              },
-              contentPadding: EdgeInsets.zero,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
+
+            // Notification toggle
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              child: SwitchListTile(
+                title: const Text('Notifikasi Peringatan'),
+                subtitle: const Text('Peringatan saat 80% terpakai'),
+                value: _notificationEnabled,
+                onChanged: (value) {
+                  setState(() => _notificationEnabled = value);
+                },
+                secondary: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.notifications_active,
+                      color: Colors.amber),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
 
             // Save button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _saveBudget,
-                child: Text(_isEditing ? 'Simpan Perubahan' : 'Tambah Anggaran'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                ),
+                child: Text(
+                  _isEditing ? 'Simpan Perubahan' : 'Buat Anggaran',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -527,7 +658,9 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isEditing ? 'Anggaran diperbarui' : 'Anggaran ditambahkan'),
+        content:
+            Text(_isEditing ? 'Anggaran diperbarui' : 'Anggaran ditambahkan'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

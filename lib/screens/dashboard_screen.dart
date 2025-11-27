@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
-import '../models/category.dart' as models;
 import '../models/budget.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
@@ -68,9 +67,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   /// Show add budget dialog
   void _showAddBudgetDialog(BuildContext context) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => _AddBudgetDialog(),
+      isScrollControlled: true,
+      builder: (context) => const AddBudgetSheet(),
     );
   }
 
@@ -323,186 +323,5 @@ class _BalanceCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Add Budget Dialog
-class _AddBudgetDialog extends StatefulWidget {
-  @override
-  State<_AddBudgetDialog> createState() => _AddBudgetDialogState();
-}
-
-class _AddBudgetDialogState extends State<_AddBudgetDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _limitController = TextEditingController();
-  String? _selectedCategoryId;
-
-  @override
-  void dispose() {
-    _limitController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Tambah Anggaran'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Category selector
-              Consumer2<CategoryProvider, BudgetProvider>(
-                builder: (context, categoryProvider, budgetProvider, child) {
-                  final expenseCategories = categoryProvider.expenseCategories;
-                  final existingBudgetCategories =
-                      budgetProvider.budgets.map((b) => b.categoryId).toSet();
-
-                  final availableCategories = expenseCategories
-                      .where((c) => !existingBudgetCategories.contains(c.id))
-                      .toList();
-
-                  if (availableCategories.isEmpty) {
-                    return const Text(
-                      'Semua kategori sudah memiliki anggaran',
-                      style: TextStyle(color: Colors.orange),
-                    );
-                  }
-
-                  // Ensure selected category is still available
-                  final validSelectedCategoryId = _selectedCategoryId != null &&
-                          availableCategories
-                              .any((c) => c.id == _selectedCategoryId)
-                      ? _selectedCategoryId
-                      : null;
-
-                  return DropdownButtonFormField<String>(
-                    value: validSelectedCategoryId,
-                    decoration: const InputDecoration(
-                      labelText: 'Kategori',
-                      hintText: 'Pilih kategori',
-                    ),
-                    items: availableCategories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category.id,
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Color(category.colorValue),
-                              child: Icon(
-                                Icons.category,
-                                color: Colors.white,
-                                size: 12,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(category.name),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Pilih kategori';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategoryId = value;
-                      });
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Limit amount
-              TextFormField(
-                controller: _limitController,
-                decoration: const InputDecoration(
-                  labelText: 'Batas Anggaran',
-                  prefixText: 'Rp ',
-                  hintText: '1000000',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Masukkan batas anggaran';
-                  }
-                  if (double.tryParse(value) == null ||
-                      double.parse(value) <= 0) {
-                    return 'Batas anggaran harus lebih dari 0';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
-        ),
-        ElevatedButton(
-          onPressed: _saveBudget,
-          child: const Text('Simpan'),
-        ),
-      ],
-    );
-  }
-
-  void _saveBudget() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedCategoryId == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pilih kategori terlebih dahulu')),
-        );
-      }
-      return;
-    }
-
-    try {
-      final budgetProvider = context.read<BudgetProvider>();
-      final limitAmount = double.tryParse(_limitController.text);
-
-      if (limitAmount == null || limitAmount <= 0) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Masukkan jumlah anggaran yang valid')),
-          );
-        }
-        return;
-      }
-
-      await budgetProvider.addBudget(
-        categoryId: _selectedCategoryId!,
-        limitAmount: limitAmount,
-        period: BudgetPeriod.monthly,
-      );
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anggaran berhasil ditambahkan')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Gagal menambahkan anggaran: ${e.toString()}')),
-        );
-      }
-    }
   }
 }
