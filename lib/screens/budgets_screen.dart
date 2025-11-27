@@ -416,8 +416,8 @@ class _AddBudgetSheetState extends State<_AddBudgetSheet> {
                       labelText: 'Kategori',
                       hintText: 'Pilih kategori',
                     ),
-                    items: availableCategories.map((category) {
-                      return DropdownMenuItem(
+                    items: availableCategories.map<DropdownMenuItem<String>>((category) {
+                      return DropdownMenuItem<String>(
                         value: category.id,
                         child: Row(
                           children: [

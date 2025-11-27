@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
-import '../models/category.dart';
+import '../models/category.dart' as models;
 import '../services/storage_service.dart';
 
 /// Sort type for categories
@@ -12,7 +12,7 @@ enum CategorySortType {
 /// Provider for managing categories
 class CategoryProvider with ChangeNotifier {
   final StorageService _storageService;
-  List<Category> _categories = [];
+  List<models.Category> _categories = <models.Category>[];
   CategorySortType _sortType = CategorySortType.usageFrequency;
   final Uuid _uuid = const Uuid();
 
@@ -20,7 +20,7 @@ class CategoryProvider with ChangeNotifier {
     _loadCategories();
   }
 
-  List<Category> get categories => _categories;
+  List<models.Category> get categories => _categories;
   CategorySortType get sortType => _sortType;
 
   /// Load categories from storage
@@ -52,11 +52,11 @@ class CategoryProvider with ChangeNotifier {
   /// Add a new category
   Future<void> addCategory({
     required String name,
-    required CategoryType type,
+    required models.CategoryType type,
     String? iconName,
     int? colorValue,
   }) async {
-    final category = Category(
+    final category = models.Category(
       id: _uuid.v4(),
       name: name,
       type: type,
@@ -69,7 +69,7 @@ class CategoryProvider with ChangeNotifier {
   }
 
   /// Update an existing category
-  Future<void> updateCategory(Category category) async {
+  Future<void> updateCategory(models.Category category) async {
     await _storageService.updateCategory(category);
     _loadCategories();
   }
@@ -81,20 +81,20 @@ class CategoryProvider with ChangeNotifier {
   }
 
   /// Get categories by type
-  List<Category> getCategoriesByType(CategoryType type) {
+  List<models.Category> getCategoriesByType(models.CategoryType type) {
     return _categories.where((c) => c.type == type).toList();
   }
 
   /// Get income categories
-  List<Category> get incomeCategories =>
-      getCategoriesByType(CategoryType.income);
+  List<models.Category> get incomeCategories =>
+      getCategoriesByType(models.CategoryType.income);
 
   /// Get expense categories
-  List<Category> get expenseCategories =>
-      getCategoriesByType(CategoryType.expense);
+  List<models.Category> get expenseCategories =>
+      getCategoriesByType(models.CategoryType.expense);
 
   /// Get category by ID
-  Category? getCategoryById(String id) {
+  models.Category? getCategoryById(String id) {
     try {
       return _categories.firstWhere((c) => c.id == id);
     } catch (e) {
@@ -103,7 +103,7 @@ class CategoryProvider with ChangeNotifier {
   }
 
   /// Get category map (id -> category)
-  Map<String, Category> get categoryMap {
+  Map<String, models.Category> get categoryMap {
     return {for (final c in _categories) c.id: c};
   }
 
