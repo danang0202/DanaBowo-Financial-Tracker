@@ -95,7 +95,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 if (value == null || value.isEmpty) {
                   return 'Masukkan jumlah';
                 }
-                if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                if (double.tryParse(value) == null ||
+                    double.parse(value) <= 0) {
                   return 'Jumlah harus lebih dari 0';
                 }
                 return null;
@@ -245,7 +246,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isEditing ? 'Transaksi diperbarui' : 'Transaksi disimpan'),
+        content:
+            Text(_isEditing ? 'Transaksi diperbarui' : 'Transaksi disimpan'),
       ),
     );
   }
@@ -263,7 +265,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
           TextButton(
             onPressed: () {
-              context.read<TransactionProvider>().deleteTransaction(widget.transaction!.id);
+              context
+                  .read<TransactionProvider>()
+                  .deleteTransaction(widget.transaction!.id);
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Close screen
               ScaffoldMessenger.of(context).showSnackBar(
@@ -340,15 +344,13 @@ class _TypeButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? color.withOpacity(0.1) 
-              : AppColors.surface,
+          color: isSelected ? color.withOpacity(0.1) : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected 
+          boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: color.withOpacity(0.2),
@@ -410,28 +412,31 @@ class _CategorySelector extends StatelessWidget {
           children: categories.map((category) {
             final isSelected = category.id == selectedCategoryId;
             final categoryColor = Color(category.colorValue);
-            final bgIndex = CategoryColors.colors.indexOf(categoryColor);
-            final backgroundColor = bgIndex != -1 
-                ? CategoryColors.backgroundColors[bgIndex] 
-                : categoryColor.withOpacity(0.1);
-                
+
+            // Get proper background color from constants
+            final categoryIndex = CategoryColors.colors
+                .indexWhere((color) => color.value == categoryColor.value);
+            final backgroundColor = categoryIndex >= 0 &&
+                    categoryIndex < CategoryColors.backgroundColors.length
+                ? CategoryColors.backgroundColors[categoryIndex]
+                : CategoryColors.backgroundColors[0];
+
             return GestureDetector(
               onTap: () => onChanged(category.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? categoryColor.withOpacity(0.15)
-                      : backgroundColor,
+                  color: categoryColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected 
-                        ? categoryColor 
+                    color: isSelected
+                        ? categoryColor
                         : categoryColor.withOpacity(0.3),
                     width: isSelected ? 2 : 1,
                   ),
-                  boxShadow: isSelected 
+                  boxShadow: isSelected
                       ? [
                           BoxShadow(
                             color: categoryColor.withOpacity(0.2),
@@ -447,7 +452,7 @@ class _CategorySelector extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: isSelected 
+                        color: isSelected
                             ? categoryColor
                             : categoryColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -455,9 +460,7 @@ class _CategorySelector extends StatelessWidget {
                       child: Icon(
                         IconHelper.getIcon(category.iconName),
                         size: 16,
-                        color: isSelected 
-                            ? Colors.white 
-                            : categoryColor,
+                        color: isSelected ? Colors.white : categoryColor,
                       ),
                     ),
                     const SizedBox(width: 8),
