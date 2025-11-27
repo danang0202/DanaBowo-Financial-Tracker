@@ -177,6 +177,15 @@ class TransactionProvider with ChangeNotifier {
     }).toList();
   }
 
+  /// Get all transactions up to the end of a specific month and year
+  List<Transaction> getTransactionsUpTo(int month, int year) {
+    final end = DateTime(year, month + 1, 1);
+
+    return _allTransactions.where((t) {
+      return t.date.isBefore(end);
+    }).toList();
+  }
+
   /// Calculate total income for a list of transactions
   double calculateTotalIncome(List<Transaction> transactions) {
     return transactions

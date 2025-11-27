@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/budget_provider.dart';
 import '../services/export_service.dart';
 import '../utils/formatters.dart';
 
@@ -167,7 +168,8 @@ class _ExportScreenState extends State<ExportScreen> {
 
       if (transactions.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak ada transaksi untuk periode ini')),
+          const SnackBar(
+              content: Text('Tidak ada transaksi untuk periode ini')),
         );
         return;
       }
@@ -196,6 +198,7 @@ class _ExportScreenState extends State<ExportScreen> {
     try {
       final transactionProvider = context.read<TransactionProvider>();
       final categoryProvider = context.read<CategoryProvider>();
+      final budgetProvider = context.read<BudgetProvider>();
 
       final transactions = transactionProvider.getTransactionsByMonth(
         _selectedMonth,
@@ -204,16 +207,34 @@ class _ExportScreenState extends State<ExportScreen> {
 
       if (transactions.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak ada transaksi untuk periode ini')),
+          const SnackBar(
+              content: Text('Tidak ada transaksi untuk periode ini')),
         );
         return;
       }
+
+      // Calculate cumulative totals
+      final cumulativeTransactions = transactionProvider.getTransactionsUpTo(
+        _selectedMonth,
+        _selectedYear,
+      );
+
+      final cumulativeIncome =
+          transactionProvider.calculateTotalIncome(cumulativeTransactions);
+      final cumulativeExpense =
+          transactionProvider.calculateTotalExpense(cumulativeTransactions);
+
+      // Get budget statuses
+      final budgetStatuses = budgetProvider.getAllBudgetStatuses(transactions);
 
       final filePath = await _exportService.exportToPdf(
         transactions: transactions,
         categoryMap: categoryProvider.categoryMap,
         month: _selectedMonth,
         year: _selectedYear,
+        cumulativeIncome: cumulativeIncome,
+        cumulativeExpense: cumulativeExpense,
+        budgetStatuses: budgetStatuses,
       );
 
       // Share the file

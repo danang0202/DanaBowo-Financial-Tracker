@@ -34,7 +34,9 @@ class ExportService {
       final category = categoryMap[transaction.categoryId];
       rows.add([
         _dateFormat.format(transaction.date),
-        transaction.type == TransactionType.income ? 'Pemasukan' : 'Pengeluaran',
+        transaction.type == TransactionType.income
+            ? 'Pemasukan'
+            : 'Pengeluaran',
         category?.name ?? 'Unknown',
         transaction.amount,
         transaction.note ?? '',
@@ -59,11 +61,15 @@ class ExportService {
     required Map<String, Category> categoryMap,
     required int month,
     required int year,
+    required double cumulativeIncome,
+    required double cumulativeExpense,
+    required List<dynamic>
+        budgetStatuses, // Using dynamic to avoid circular dependency if BudgetStatus is in provider
   }) async {
     final pdf = pw.Document();
     final monthName = DateFormat('MMMM', 'id_ID').format(DateTime(year, month));
 
-    // Calculate totals
+    // Calculate totals for current month
     double totalIncome = 0;
     double totalExpense = 0;
 
@@ -80,11 +86,22 @@ class ExportService {
       ..sort((a, b) => a.date.compareTo(b.date));
 
     // Calculate category totals for expenses
-    final Map<String, double> categoryTotals = {};
+    final Map<String, double> expenseCategoryTotals = {};
     for (final transaction in transactions) {
       if (transaction.type == TransactionType.expense) {
-        categoryTotals[transaction.categoryId] =
-            (categoryTotals[transaction.categoryId] ?? 0) + transaction.amount;
+        expenseCategoryTotals[transaction.categoryId] =
+            (expenseCategoryTotals[transaction.categoryId] ?? 0) +
+                transaction.amount;
+      }
+    }
+
+    // Calculate category totals for income
+    final Map<String, double> incomeCategoryTotals = {};
+    for (final transaction in transactions) {
+      if (transaction.type == TransactionType.income) {
+        incomeCategoryTotals[transaction.categoryId] =
+            (incomeCategoryTotals[transaction.categoryId] ?? 0) +
+                transaction.amount;
       }
     }
 
@@ -113,7 +130,16 @@ class ExportService {
             ),
             pw.SizedBox(height: 24),
 
-            // Summary
+            // Monthly Summary
+            pw.Text(
+              'Ringkasan Bulan Ini',
+              style: pw.TextStyle(
+                fontSize: 14,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey700,
+              ),
+            ),
+            pw.SizedBox(height: 8),
             pw.Container(
               padding: const pw.EdgeInsets.all(16),
               decoration: pw.BoxDecoration(
@@ -123,59 +149,88 @@ class ExportService {
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
                 children: [
-                  pw.Column(
-                    children: [
-                      pw.Text('Total Pemasukan',
-                          style: const pw.TextStyle(fontSize: 12)),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        _currencyFormat.format(totalIncome),
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.green700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.Column(
-                    children: [
-                      pw.Text('Total Pengeluaran',
-                          style: const pw.TextStyle(fontSize: 12)),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        _currencyFormat.format(totalExpense),
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.red700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.Column(
-                    children: [
-                      pw.Text('Saldo', style: const pw.TextStyle(fontSize: 12)),
-                      pw.SizedBox(height: 4),
-                      pw.Text(
-                        _currencyFormat.format(totalIncome - totalExpense),
-                        style: pw.TextStyle(
-                          fontSize: 14,
-                          fontWeight: pw.FontWeight.bold,
-                          color: (totalIncome - totalExpense) >= 0
-                              ? PdfColors.blue700
-                              : PdfColors.red700,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildSummaryItem(
+                      'Pemasukan', totalIncome, PdfColors.green700),
+                  _buildSummaryItem(
+                      'Pengeluaran', totalExpense, PdfColors.red700),
+                  _buildSummaryItem(
+                      'Saldo',
+                      totalIncome - totalExpense,
+                      (totalIncome - totalExpense) >= 0
+                          ? PdfColors.blue700
+                          : PdfColors.red700),
                 ],
               ),
             ),
             pw.SizedBox(height: 24),
 
-            // Category breakdown
-            if (categoryTotals.isNotEmpty) ...[
+            // Cumulative Summary
+            pw.Text(
+              'Ringkasan Kumulatif (Sampai $monthName $year)',
+              style: pw.TextStyle(
+                fontSize: 14,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey700,
+              ),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(16),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey400),
+                borderRadius: pw.BorderRadius.circular(8),
+                color: PdfColors.grey100,
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSummaryItem(
+                      'Total Pemasukan', cumulativeIncome, PdfColors.green700),
+                  _buildSummaryItem(
+                      'Total Pengeluaran', cumulativeExpense, PdfColors.red700),
+                  _buildSummaryItem(
+                      'Total Saldo',
+                      cumulativeIncome - cumulativeExpense,
+                      (cumulativeIncome - cumulativeExpense) >= 0
+                          ? PdfColors.blue700
+                          : PdfColors.red700),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 24),
+
+            // Income Breakdown
+            if (incomeCategoryTotals.isNotEmpty) ...[
+              pw.Text(
+                'Rincian Pemasukan per Kategori',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table.fromTextArray(
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.green50),
+                cellPadding: const pw.EdgeInsets.all(8),
+                headers: ['Kategori', 'Jumlah', 'Persentase'],
+                data: incomeCategoryTotals.entries.map((entry) {
+                  final category = categoryMap[entry.key];
+                  final percentage =
+                      totalIncome > 0 ? (entry.value / totalIncome * 100) : 0;
+                  return [
+                    category?.name ?? 'Unknown',
+                    _currencyFormat.format(entry.value),
+                    '${percentage.toStringAsFixed(1)}%',
+                  ];
+                }).toList(),
+              ),
+              pw.SizedBox(height: 24),
+            ],
+
+            // Expense Breakdown
+            if (expenseCategoryTotals.isNotEmpty) ...[
               pw.Text(
                 'Rincian Pengeluaran per Kategori',
                 style: pw.TextStyle(
@@ -187,16 +242,53 @@ class ExportService {
               pw.Table.fromTextArray(
                 headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                 headerDecoration:
-                    const pw.BoxDecoration(color: PdfColors.grey200),
+                    const pw.BoxDecoration(color: PdfColors.red50),
                 cellPadding: const pw.EdgeInsets.all(8),
                 headers: ['Kategori', 'Jumlah', 'Persentase'],
-                data: categoryTotals.entries.map((entry) {
+                data: expenseCategoryTotals.entries.map((entry) {
                   final category = categoryMap[entry.key];
                   final percentage =
                       totalExpense > 0 ? (entry.value / totalExpense * 100) : 0;
                   return [
                     category?.name ?? 'Unknown',
                     _currencyFormat.format(entry.value),
+                    '${percentage.toStringAsFixed(1)}%',
+                  ];
+                }).toList(),
+              ),
+              pw.SizedBox(height: 24),
+            ],
+
+            // Budget Realization
+            if (budgetStatuses.isNotEmpty) ...[
+              pw.Text(
+                'Realisasi Anggaran',
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 12),
+              pw.Table.fromTextArray(
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.blue50),
+                cellPadding: const pw.EdgeInsets.all(8),
+                headers: ['Kategori', 'Anggaran', 'Terpakai', 'Sisa', 'Status'],
+                data: budgetStatuses.map((status) {
+                  // Accessing properties dynamically since we used dynamic type
+                  final categoryId = status.budget.categoryId;
+                  final category = categoryMap[categoryId];
+                  final limit = status.budget.limitAmount;
+                  final spent = status.spent;
+                  final remaining = status.remaining;
+                  final percentage = status.percentage * 100;
+
+                  return [
+                    category?.name ?? 'Unknown',
+                    _currencyFormat.format(limit),
+                    _currencyFormat.format(spent),
+                    _currencyFormat.format(remaining),
                     '${percentage.toStringAsFixed(1)}%',
                   ];
                 }).toList(),
@@ -256,5 +348,22 @@ class ExportService {
     await file.writeAsBytes(await pdf.save());
 
     return file.path;
+  }
+
+  pw.Widget _buildSummaryItem(String label, double value, PdfColor color) {
+    return pw.Column(
+      children: [
+        pw.Text(label, style: const pw.TextStyle(fontSize: 12)),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          _currencyFormat.format(value),
+          style: pw.TextStyle(
+            fontSize: 14,
+            fontWeight: pw.FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 }
