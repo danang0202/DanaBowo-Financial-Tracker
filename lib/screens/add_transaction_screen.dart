@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/transaction.dart';
-import '../models/category.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../utils/icon_helper.dart';
 import '../utils/formatters.dart';
 import '../widgets/dynamic_island_notification.dart';
+import '../widgets/transaction/transaction_type_button.dart';
+import '../widgets/transaction/transaction_datetime_button.dart';
 
 /// Screen for adding or editing transactions
 class AddTransactionScreen extends StatefulWidget {
@@ -99,7 +100,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: _TypeButton(
+                          child: TransactionTypeButton(
                             label: 'Pengeluaran',
                             icon: Icons.arrow_downward_rounded,
                             isSelected: isExpense,
@@ -111,7 +112,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           ),
                         ),
                         Expanded(
-                          child: _TypeButton(
+                          child: TransactionTypeButton(
                             label: 'Pemasukan',
                             icon: Icons.arrow_upward_rounded,
                             isSelected: !isExpense,
@@ -299,7 +300,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _DateTimeButton(
+                        child: TransactionDateTimeButton(
                           icon: Icons.calendar_today_rounded,
                           label:
                               DateFormat('dd MMM yyyy').format(_selectedDate),
@@ -319,7 +320,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _DateTimeButton(
+                        child: TransactionDateTimeButton(
                           icon: Icons.access_time_rounded,
                           label: _selectedTime.format(context),
                           onTap: () async {
@@ -499,107 +500,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: const Text('Hapus'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TypeButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final Color activeColor;
-  final VoidCallback onTap;
-
-  const _TypeButton({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.activeColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? activeColor : Theme.of(context).disabledColor,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color:
-                    isSelected ? activeColor : Theme.of(context).disabledColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DateTimeButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _DateTimeButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
