@@ -71,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
                           SettingsTile(
                             icon: Icons.info_outline_rounded,
                             title: 'Versi Aplikasi',
-                            subtitle: 'v1.0.0',
+                            subtitle: 'v1.0.1',
                             color: Colors.blue,
                             showArrow: false,
                           ),
