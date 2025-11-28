@@ -3,7 +3,6 @@ import '../providers/budget_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/formatters.dart';
 import '../utils/constants.dart';
-import '../utils/icon_helper.dart';
 
 /// Budget warning card widget
 class BudgetWarningCard extends StatelessWidget {

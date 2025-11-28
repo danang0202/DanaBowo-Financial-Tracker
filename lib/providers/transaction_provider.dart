@@ -166,6 +166,18 @@ class TransactionProvider with ChangeNotifier {
     }).toList();
   }
 
+  /// Get transactions for this year (Helper for Dashboard)
+  List<Transaction> getThisYearTransactions() {
+    final now = DateTime.now();
+    final start = DateTime(now.year, 1, 1);
+    final end = DateTime(now.year + 1, 1, 1);
+
+    return _allTransactions.where((t) {
+      return t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          t.date.isBefore(end);
+    }).toList();
+  }
+
   /// Get transactions by month and year
   List<Transaction> getTransactionsByMonth(int month, int year) {
     final start = DateTime(year, month, 1);

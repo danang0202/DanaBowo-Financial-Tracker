@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/category_provider.dart';
-import '../utils/formatters.dart';
 
 /// Expense chart widget showing expenses by category
 class ExpenseChart extends StatefulWidget {
@@ -47,7 +46,8 @@ class _ExpenseChartState extends State<ExpenseChart> {
                     child: PieChart(
                       PieChartData(
                         pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
                             setState(() {
                               if (!event.isInterestedForInteractions ||
                                   pieTouchResponse == null ||
@@ -76,8 +76,10 @@ class _ExpenseChartState extends State<ExpenseChart> {
               spacing: 16,
               runSpacing: 8,
               children: sortedEntries.take(6).map((entry) {
-                final category = widget.categoryProvider.getCategoryById(entry.key);
-                final percentage = (entry.value / total * 100).toStringAsFixed(1);
+                final category =
+                    widget.categoryProvider.getCategoryById(entry.key);
+                final percentage =
+                    (entry.value / total * 100).toStringAsFixed(1);
 
                 return Row(
                   mainAxisSize: MainAxisSize.min,

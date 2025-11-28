@@ -4,6 +4,7 @@ import '../../providers/transaction_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../utils/constants.dart';
+import '../../models/transaction.dart';
 import '../summary_card.dart';
 import '../transaction_list_item.dart';
 import '../expense_chart.dart';
@@ -12,10 +13,18 @@ import '../budget_warning_card.dart';
 import '../../screens/add_transaction_screen.dart';
 import '../../screens/export_screen.dart';
 import 'dashboard_balance_card.dart';
+import 'trend_chart.dart';
 
 /// Home tab content for dashboard
-class DashboardHomeTab extends StatelessWidget {
+class DashboardHomeTab extends StatefulWidget {
   const DashboardHomeTab({super.key});
+
+  @override
+  State<DashboardHomeTab> createState() => _DashboardHomeTabState();
+}
+
+class _DashboardHomeTabState extends State<DashboardHomeTab> {
+  TrendPeriod _trendPeriod = TrendPeriod.month;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +33,14 @@ class DashboardHomeTab extends StatelessWidget {
       body: Consumer3<TransactionProvider, CategoryProvider, BudgetProvider>(
         builder: (context, transactionProvider, categoryProvider,
             budgetProvider, child) {
+          final now = DateTime.now();
           final todayTransactions = transactionProvider.getTodayTransactions();
           final weekTransactions =
               transactionProvider.getThisWeekTransactions();
           final monthTransactions =
               transactionProvider.getThisMonthTransactions();
+          final yearTransactions =
+              transactionProvider.getThisYearTransactions();
 
           final todayIncome =
               transactionProvider.calculateTotalIncome(todayTransactions);
@@ -52,9 +64,26 @@ class DashboardHomeTab extends StatelessWidget {
           final recentTransactions =
               transactionProvider.transactions.take(5).toList();
 
+          // Determine data for TrendChart
+          List<Transaction> trendData;
+          DateTime trendStartDate;
+          DateTime trendEndDate;
+
+          if (_trendPeriod == TrendPeriod.month) {
+            trendData = monthTransactions;
+            trendStartDate = DateTime(now.year, now.month, 1);
+            trendEndDate = DateTime(now.year, now.month + 1, 0);
+          } else {
+            trendData = yearTransactions;
+            trendStartDate = DateTime(now.year, 1, 1);
+            trendEndDate = DateTime(now.year, 12, 31);
+          }
+
           return RefreshIndicator(
             onRefresh: () async {
-              // Refresh data
+              transactionProvider.refresh();
+              categoryProvider.refresh();
+              budgetProvider.refresh();
             },
             child: CustomScrollView(
               slivers: [
@@ -100,6 +129,20 @@ class DashboardHomeTab extends StatelessWidget {
                           title: 'Bulan Ini',
                           income: monthIncome,
                           expense: monthExpense,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Trend Chart
+                        TrendChart(
+                          transactions: trendData,
+                          startDate: trendStartDate,
+                          endDate: trendEndDate,
+                          period: _trendPeriod,
+                          onPeriodChanged: (period) {
+                            setState(() {
+                              _trendPeriod = period;
+                            });
+                          },
                         ),
                         const SizedBox(height: 24),
 
