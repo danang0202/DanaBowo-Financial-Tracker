@@ -107,6 +107,21 @@ class CategoryProvider with ChangeNotifier {
     return {for (final c in _categories) c.id: c};
   }
 
+  /// Check if a category is being used in transactions or budgets
+  bool isCategoryInUse(String categoryId) {
+    // Check if category is used in any transaction
+    final transactions = _storageService.getAllTransactions();
+    final hasTransactions = transactions.any((t) => t.categoryId == categoryId);
+
+    if (hasTransactions) return true;
+
+    // Check if category is used in any budget
+    final budgets = _storageService.getAllBudgets();
+    final hasBudgets = budgets.any((b) => b.categoryId == categoryId);
+
+    return hasBudgets;
+  }
+
   /// Refresh categories from storage
   void refresh() {
     _loadCategories();

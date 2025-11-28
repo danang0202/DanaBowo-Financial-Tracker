@@ -357,6 +357,38 @@ class _CategoryItem extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context, Category category) {
+    final categoryProvider = context.read<CategoryProvider>();
+    final isInUse = categoryProvider.isCategoryInUse(category.id);
+
+    if (isInUse) {
+      // Show error dialog if category is in use
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_rounded, color: AppColors.warning),
+              SizedBox(width: 12),
+              Text('Tidak Dapat Dihapus'),
+            ],
+          ),
+          content: Text(
+            'Kategori "${category.name}" sedang digunakan dalam transaksi atau anggaran. Hapus semua transaksi dan anggaran terkait terlebih dahulu.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Show delete confirmation if category is not in use
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
